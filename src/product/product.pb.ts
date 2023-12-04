@@ -14,14 +14,14 @@ export interface Error {
 export interface Product {
   name: string;
   description: string;
-  price: string;
+  price: number;
   id: string;
 }
 
 export interface AddProductRequest {
   name: string;
   description: string;
-  price: string;
+  price: number;
 }
 
 export interface AddProductResponse {
@@ -32,7 +32,7 @@ export interface AddProductResponse {
 export interface UpdateProductRequest {
   name: string;
   description: string;
-  price: string;
+  price: number;
 }
 
 export interface UpdateProductResponse {

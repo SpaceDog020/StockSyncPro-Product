@@ -1,20 +1,47 @@
 import { Injectable } from '@nestjs/common';
-import { AddProductRequest, AddProductResponse, DeleteProductByIdRequest, Empty, Product, UpdateProductRequest, getProductByIdRequest } from './product.pb';
+import { AddProductRequest, AddProductResponse, DeleteProductByIdRequest, Empty, GetAllProductsResponse, UpdateProductRequest, getProductByIdRequest } from './product.pb';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Product, ProductDocument } from 'src/mongoose/product.schema';
 
 @Injectable()
 export class ProductService {
-    addProduct(request: AddProductRequest): PromiseLike<AddProductResponse> {
-        const newProduct: Product = {
-            name: request.name,
-            description: request.description,
-            price: request.price,
-            id: Math.random().toString(), // Este es solo un ejemplo, deberías generar un ID único de alguna manera
-        };
-        return Promise.resolve({ product: newProduct, error: undefined });
+
+
+    constructor(
+        @InjectModel(Product.name) private readonly productModel: Model<ProductDocument>,
+    ) { }
+
+    async addProduct(request: AddProductRequest): Promise<AddProductResponse> {
+        try {
+            const newProduct: Product = {
+                name: request.name,
+                description: request.description,
+                price: request.price,
+                id: undefined
+            };
+            const createdProduct = new this.productModel(newProduct);
+            await createdProduct.save();
+            return {
+                product: createdProduct,
+                error: undefined,
+            };
+        } catch (error) {
+            return {
+                product: undefined,
+                error: error.message || 'Error al agregar el producto',
+            };
+        }
     }
 
-    getAllProducts(request: Empty): import("./product.pb").GetAllProductsResponse | PromiseLike<import("./product.pb").GetAllProductsResponse> {
-        throw new Error('Method not implemented.');
+   
+    async getAllProducts(request: Empty): Promise<GetAllProductsResponse>  {
+        try {
+            return { products : await this.productModel.find().exec(), error : undefined};
+        } catch (error) {
+            // Manejo de errores, puedes personalizar según tus necesidades.
+            throw new Error(`Error al obtener los productos: ${error.message}`);
+        }
     }
 
     getProductById(request: getProductByIdRequest): import("./product.pb").getProductByIdResponse | PromiseLike<import("./product.pb").getProductByIdResponse> {
