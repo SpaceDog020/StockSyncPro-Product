@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AddProductRequest, AddProductResponse, DeleteProductByIdRequest, Empty, GetAllProductsResponse, UpdateProductRequest, getProductByIdRequest, getProductByIdResponse } from './product.pb';
+import { AddProductRequest, AddProductResponse, DeleteProductByIdRequest, DeleteProductByIdResponse, Empty, GetAllProductsResponse, UpdateProductRequest, UpdateProductResponse, getProductByIdRequest, getProductByIdResponse } from './product.pb';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Product, ProductDocument } from 'src/mongoose/product.schema';
@@ -38,10 +38,7 @@ export class ProductService {
                 error: undefined,
             };
         } catch (error) {
-            return {
-                product: undefined,
-                error: error.message || 'Error al agregar el producto',
-            };
+            throw new Error(`Error: ${error.message}`);
         }
     }
 
@@ -50,7 +47,6 @@ export class ProductService {
         try {
             const productList = await this.productModel.find().lean().exec();
 
-            // Transforma cada documento en productList
             const transformedProducts = productList.map(product => {
                 product.id = product._id.toString();
                 delete product._id;
@@ -59,8 +55,7 @@ export class ProductService {
 
             return { products: transformedProducts, error: undefined };
         } catch (error) {
-            // Manejo de errores, puedes personalizar según tus necesidades.
-            throw new Error(`Error al obtener los productos: ${error.message}`);
+            throw new Error(`Error: ${error.message}`);
         }
     }
 
@@ -88,17 +83,71 @@ export class ProductService {
 
         } catch (error) {
             // Manejo de errores, puedes personalizar según tus necesidades.
-            throw new Error(`Error al obtener los productos: ${error.message}`);
+            throw new Error(`Error: ${error.message}`);
         }
     }
 
 
-    deleteProductById(request: DeleteProductByIdRequest): import("./product.pb").DeleteProductByIdResponse | PromiseLike<import("./product.pb").DeleteProductByIdResponse> {
-        throw new Error('Method not implemented.');
+    async deleteProductById(request: DeleteProductByIdRequest): Promise<DeleteProductByIdResponse> {
+        try {
+            const productId = request.id;
+
+            const deletedProduct = await this.productModel.findByIdAndDelete(productId).exec();
+
+            if (!deletedProduct) {
+                return { isDeleted: false, error: { message: "Product not Found" } };
+            }
+
+            return { isDeleted: true, error: undefined};
+        } catch (error) {
+            throw new Error(`Error: ${error.message}`);
+        }
     }
 
-    updateProduct(request: UpdateProductRequest): import("./product.pb").UpdateProductResponse | PromiseLike<import("./product.pb").UpdateProductResponse> {
-        throw new Error('Method not implemented.');
+    
+    async updateProduct(request: UpdateProductRequest): Promise<UpdateProductResponse> {
+        try {
+            const productId = request.id;
+            const updatedFields: Partial<Product> = {};
+
+            
+            if (request.name) {
+                updatedFields.name = request.name;
+            }
+            if (request.description) {
+                updatedFields.description = request.description;
+            }
+            if (request.price) {
+                updatedFields.price = request.price;
+            }
+
+            
+            const updatedProduct = await this.productModel
+                .findOneAndUpdate({ _id: productId }, updatedFields, { new: true })
+                .exec();
+
+            if (!updatedProduct) {
+                return {
+                    product: undefined,
+                    error: { message: "Product not Found" },
+                };
+            }
+
+            return {
+                product: {
+                    name: updatedProduct.name,
+                    description: updatedProduct.description,
+                    price: updatedProduct.price,
+                    id: updatedProduct.id,
+                },
+                error: undefined,
+            };
+        } catch (error) {
+            return {
+                product: undefined,
+                error: { message: error},
+            };
+        }
     }
 
 }
