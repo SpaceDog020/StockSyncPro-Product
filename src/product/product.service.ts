@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { AddProductRequest, AddProductResponse, DeleteProductByIdRequest, DeleteProductByIdResponse, Empty, GetAllProductsResponse, UpdateProductRequest, UpdateProductResponse, getProductByIdRequest, getProductByIdResponse } from './product.pb';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Product, ProductDocument } from 'src/mongoose/product.schema';
+import { Product, ProductDocument } from '../mongoose/product.schema';
 
 @Injectable()
 export class ProductService {
@@ -16,7 +16,7 @@ export class ProductService {
         try {
             const product = await this.productModel.findOne({ name: request.name }).exec();
             console.log(product);
-            if (product !== null) {
+            if (product !== null ) {
                 return { product: undefined, error: { message: "Product already exists" } }
             };
 
