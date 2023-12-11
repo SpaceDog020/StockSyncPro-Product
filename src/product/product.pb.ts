@@ -55,6 +55,10 @@ export interface GetAllProductsResponse {
   error: Error | undefined;
 }
 
+export interface getProductsByIdsRequest {
+  ids: string[];
+}
+
 export interface DeleteProductByIdRequest {
   id: string;
 }
@@ -72,6 +76,8 @@ export interface ProductServiceClient {
   updateProduct(request: UpdateProductRequest): Observable<UpdateProductResponse>;
 
   getProductById(request: getProductByIdRequest): Observable<getProductByIdResponse>;
+
+  getProductsByIds(request: getProductsByIdsRequest): Observable<GetAllProductsResponse>;
 
   getAllProducts(request: Empty): Observable<GetAllProductsResponse>;
 
@@ -91,6 +97,10 @@ export interface ProductServiceController {
     request: getProductByIdRequest,
   ): Promise<getProductByIdResponse> | Observable<getProductByIdResponse> | getProductByIdResponse;
 
+  getProductsByIds(
+    request: getProductsByIdsRequest,
+  ): Promise<GetAllProductsResponse> | Observable<GetAllProductsResponse> | GetAllProductsResponse;
+
   getAllProducts(
     request: Empty,
   ): Promise<GetAllProductsResponse> | Observable<GetAllProductsResponse> | GetAllProductsResponse;
@@ -106,6 +116,7 @@ export function ProductServiceControllerMethods() {
       "addProduct",
       "updateProduct",
       "getProductById",
+      "getProductsByIds",
       "getAllProducts",
       "deleteProductById",
     ];

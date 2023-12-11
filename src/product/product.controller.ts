@@ -12,6 +12,7 @@ import {
   DeleteProductByIdRequest,
   DeleteProductByIdResponse,
   Empty,
+  getProductsByIdsRequest,
 } from './product.pb';
 
 @Controller('product')
@@ -31,6 +32,11 @@ export class ProductController {
   @GrpcMethod('ProductService', 'getProductById')
   async getProductById(request: getProductByIdRequest): Promise<getProductByIdResponse> {
     return this.productService.getProductById(request);
+  }
+
+  @GrpcMethod('ProductService', 'getProductsByIds')
+  async getProductsByIds(request: getProductsByIdsRequest): Promise<GetAllProductsResponse> {
+    return this.productService.getProductsByIds(request);
   }
 
   @GrpcMethod('ProductService', 'getAllProducts')

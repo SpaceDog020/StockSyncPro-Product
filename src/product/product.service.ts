@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AddProductRequest, AddProductResponse, DeleteProductByIdRequest, DeleteProductByIdResponse, Empty, GetAllProductsResponse, UpdateProductRequest, UpdateProductResponse, getProductByIdRequest, getProductByIdResponse } from './product.pb';
+import { AddProductRequest, AddProductResponse, DeleteProductByIdRequest, DeleteProductByIdResponse, Empty, GetAllProductsResponse, UpdateProductRequest, UpdateProductResponse, getProductByIdRequest, getProductByIdResponse, getProductsByIdsRequest } from './product.pb';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Product, ProductDocument } from '../mongoose/product.schema';
@@ -59,6 +59,23 @@ export class ProductService {
         }
     }
 
+    async getProductsByIds(request: getProductsByIdsRequest): Promise<GetAllProductsResponse> {
+        try {
+            const productIds = request.ids.map(id => new Types.ObjectId(id));
+
+            const productList = await this.productModel.find({ _id: { $in: productIds } }).lean().exec();
+
+            const transformedProducts = productList.map(product => {
+                product.id = product._id.toString();
+                delete product._id;
+                return product;
+            });
+
+            return { products: transformedProducts, error: undefined };
+        } catch (error) {
+            throw new Error(`Error: ${error.message}`);
+        }
+    }
 
     async getProductById(request: getProductByIdRequest): Promise<getProductByIdResponse> {
         try {
